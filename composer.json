@@ -6,7 +6,7 @@
         "keloola-service-auth"
     ],
     "homepage": "https://github.com/keloola/keloola-service-auth",
-    "license": "MIT",
+    "license": "Keloola",
     "type": "library",
     "minimum-stability": "dev",
     "prefer-stable": true,

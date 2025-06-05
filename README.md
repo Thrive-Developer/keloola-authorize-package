@@ -11,7 +11,7 @@ This is where your description should go. Try and limit it to a paragraph or two
 You can install the package via composer:
 
 ```bash
-composer require keloola/keloola-service-auth
+composer require keloola/keloola-sso-authorize
 ```
 
 ## Usage
@@ -42,11 +42,3 @@ If you discover any security related issues, please email roni.jakarianto@thrive
 
 -   [Roni Jakarianto](https://github.com/keloola)
 -   [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Laravel Package Boilerplate
-
-This package was generated using the [Laravel Package Boilerplate](https://laravelpackageboilerplate.com).
