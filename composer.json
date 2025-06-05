@@ -1,0 +1,56 @@
+{
+    "name": "keloola/keloola-sso-authorize",
+    "description": "Keloola Authorize with SSO",
+    "keywords": [
+        "keloola",
+        "keloola-service-auth"
+    ],
+    "homepage": "https://github.com/keloola/keloola-service-auth",
+    "license": "MIT",
+    "type": "library",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Roni Jakarianto",
+            "email": "roni.jakarianto@thrive.co.id",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.0",
+        "illuminate/support": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Keloola\\KeloolaSsoAuthorize\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Keloola\\KeloolaSsoAuthorize\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Keloola\\KeloolaSsoAuthorize\\KeloolaSsoAuthorizeServiceProvider"
+            ],
+            "aliases": {
+                "KeloolaSso": "Keloola\\KeloolaSsoAuthorize\\KeloolaSsoAuthorizeFacade"
+            }
+        }
+    }
+}
