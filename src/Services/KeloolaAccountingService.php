@@ -24,8 +24,9 @@ class KeloolaAccountingService
             'data'    => []
         ];
 
-        if(Cache::has($sso_id)) {
-            return Cache::get($sso_id);
+        $cache_key = 'keloolauhtorize.'.$sso_id;
+        if(Cache::has($cache_key)) {
+            return Cache::get($cache_key);
         }
 
 
@@ -34,7 +35,7 @@ class KeloolaAccountingService
         ]);
 
         if($response->clientError()) {
-            Cache::forget($sso_id);
+            Cache::forget($cache_key);
             Log::error('Failed get user accounting '.$response->object()?->message);
             return (object) [
                 'message' => $response->object()?->message,
@@ -44,7 +45,7 @@ class KeloolaAccountingService
         }
 
         if($response->serverError()) {
-            Cache::forget($sso_id);
+            Cache::forget($cache_key);
             Log::error('Failed get user accounting '.$response->throw());
             return (object) [
                 'message' => __('keloolauthorize::message.error_500'),
@@ -57,7 +58,7 @@ class KeloolaAccountingService
         $expired = config('keloolauthorize.keloola_auth_cache_expired') ?? 3600;
 
         
-        return Cache::remember($sso_id, $expired, function () use ($response) {
+        return Cache::remember($cache_key, $expired, function () use ($response) {
             return (object) [
                 'status' => $response->status(),
                 'message' => $response->object()?->message,

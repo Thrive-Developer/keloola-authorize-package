@@ -18,8 +18,9 @@ class KeloolaSsoService
             'data'    => []
         ];
 
-        if(Cache::has($token)) {
-            return Cache::get($token);
+        $cache_key = 'keloolauhtorize.'.$token;
+        if(Cache::has($cache_key)) {
+            return Cache::get($cache_key);
         }
 
 
@@ -28,7 +29,7 @@ class KeloolaSsoService
         ]);
 
         if($response->clientError()) {
-            Cache::forget($token);
+            Cache::forget($cache_key);
             Log::error('Failed get user sso '.$response->object()?->message);
             return (object) [
                 'message' => $response->object()?->message,
@@ -38,7 +39,7 @@ class KeloolaSsoService
         }
 
         if($response->serverError()) {
-            Cache::forget($token);
+            Cache::forget($cache_key);
             Log::error('Failed get user sso '.$response->throw());
             return (object) [
                 'message' => __('keloolauthorize::message.error_500'),
@@ -49,7 +50,7 @@ class KeloolaSsoService
 
         $expired = config('keloolauthorize.keloola_auth_cache_expired') ?? 3600;
 
-        return Cache::remember($token, $expired, function () use ($response) {
+        return Cache::remember($cache_key, $expired, function () use ($response) {
             return (object) [
                 'status' => $response->status(),
                 'message' => $response->object()?->message,
