@@ -17,7 +17,44 @@ composer require keloola/keloola-sso-authorize
 ## Usage
 
 ```php
-// Usage description here
+php artisan vendor:publish --tag=keloola-auth-config
+php artisan vendor:publish --tag=keloola-auth-lang
+```
+
+```env
+KELOOLA_AUTH_APP_ID=xxx //app id
+KELOOLA_AUTH_SSO_HOST=https://accounts.keloola.xyz
+KELOOLA_AUTH_CACHE_EXPIRED=60
+KELOOLA_AUTH_ACCOUNTING_APP_ID=xxx //accounting app id kalau butuh connection accounting
+KELOOLA_AUTH_ACCOUNTING_HOST=host api accounting
+KELOOLA_AUTH_ACCOUNTING_ENCRYPT=false //jika accounting tidak di encrypt response dan request nya
+KELOOLA_AUTH_ACCOUNTING_APP_KEY=xxx //jika encrypt true ini require dengan app key accounting
+```
+
+```Middleware Setup
+Tambahkan middleware di bootstrap app, sebgai berikut khususnya di routes/api.php
+
+project-laravel/bootstrap/app.php
+
+use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAuthMiddleware;
+use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAuthAccountingMiddleware;
+
+->withMiddleware(function (Middleware $middleware) {
+       $middleware->api(append: [
+            KeloolaAuthMiddleware::class,
+            KeloolaAuthAccountingMiddleware::class,
+        ]);
+})
+```
+
+```Consume Data
+
+Sso User Data 
+$request->user;
+
+Accunting Data
+$request->user_accoounting
+
 ```
 
 ### Testing
