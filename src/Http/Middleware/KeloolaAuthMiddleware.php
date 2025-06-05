@@ -29,6 +29,8 @@ class KeloolaAuthMiddleware
         $sso_data          = (object) $this->ssoService->user($token);
         if($sso_data->status != 200) return response()->json(['message' => $sso_data->message], $sso_data->status);
 
+        $application      = null;
+
         if(is_array($sso_data->data->applications)) {
             $applications = $sso_data->data->applications;
             $application   = current(array_filter($applications, fn ($filter) => $filter->id == config('keloolauthorize.keloola_auth_app_id')));
@@ -47,7 +49,7 @@ class KeloolaAuthMiddleware
 
         if(empty($sso_data->data->applications)) return response()->json(['message' => __('keloolauthorize::message.empty_applications')], 401);
 
-        $request->merge(['token'=> $token, 'user' => (array) $sso_data->data]);
+        $request->merge(['token'=> $token, 'user' => (array) $sso_data->data, 'application' => (array) $application]);
 
         return $next($request);
     }
