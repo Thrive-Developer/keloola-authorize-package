@@ -18,7 +18,6 @@ composer require keloola/keloola-sso-authorize
 
 ```php
 php artisan vendor:publish --tag=keloola-auth-config
-php artisan vendor:publish --tag=keloola-auth-lang
 ```
 
 ```env
