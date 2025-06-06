@@ -14,7 +14,7 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
         /*
          * Optional methods to load your package assets
          */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'keloolauthorize');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'keloolauthorize');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'keloola-service-auth');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
@@ -34,9 +34,9 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
             ], 'assets');*/
 
             // Publishing the translation files.
-            $this->publishes([
-                __DIR__.'/../resources/lang' => base_path('lang/vendor/keloolauthorize'),
-            ], 'keloola-auth-lang');
+            // $this->publishes([
+            //     __DIR__.'/../resources/lang' => resource_path('lang/vendor/keloolauthorize'),
+            // ], 'keloola-auth-lang');
 
             // Registering package commands.
             // $this->commands([]);
