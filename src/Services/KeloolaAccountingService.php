@@ -30,7 +30,7 @@ class KeloolaAccountingService
         }
 
 
-        $response = Http::withToken($token)->post(config('keloolauthorize.keloola_auth_accounting_host').'/api/sso/accounting/user',[
+        $response = Http::withToken($token)->post(config('keloolauthorize.keloola_auth_accounting_host').'/api/users/company',[
             'sso_id' => $sso_id
         ]);
 

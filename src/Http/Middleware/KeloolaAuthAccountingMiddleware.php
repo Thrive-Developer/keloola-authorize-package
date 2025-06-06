@@ -25,8 +25,7 @@ class KeloolaAuthAccountingMiddleware
         if($accounting_data->status != 200) return response()->json(['message' => $accounting_data->message], $accounting_data->status);
 
         $request->merge([
-            'user_accoounting'  => (array) $accounting_data,
-            'company_id'        => $accounting_data->company_user->company_id, 
+            'user_accoounting'  => (array) $accounting_data->data,
         ]);
 
         return $next($request);
