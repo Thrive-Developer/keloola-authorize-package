@@ -18,9 +18,9 @@ class KeloolaAuthAccountingMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        if(empty($request->user))  return response()->json(['message' => __('keloolauthorize::message.unauthorized')], 401);
+        if(empty($request->sso_user))  return response()->json(['message' => __('keloolauthorize::message.unauthorized')], 401);
 
-        $user            = (object) $request->user;
+        $user            = (object) $request->sso_user;
         $accounting_data = $this->service->user($request->token, $user->email);
         if($accounting_data->status != 200) return response()->json(['message' => $accounting_data->message], $accounting_data->status);
 
