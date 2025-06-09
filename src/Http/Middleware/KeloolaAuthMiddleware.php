@@ -49,7 +49,7 @@ class KeloolaAuthMiddleware
 
         if(empty($sso_data->data->applications)) return response()->json(['message' => __('keloolauthorize::message.empty_applications')], 401);
 
-        $request->merge(['token'=> $token, 'user' => (array) $sso_data->data, 'application' => (array) $application]);
+        $request->merge(['token'=> $token, 'sso_user' => (array) $sso_data->data, 'application' => (array) $application]);
 
         return $next($request);
     }

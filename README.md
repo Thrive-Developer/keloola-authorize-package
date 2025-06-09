@@ -1,10 +1,8 @@
-# Very short description of the package
+# Package
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/keloola/keloola-service-auth.svg?style=flat-square)](https://packagist.org/packages/keloola/keloola-service-auth)
-[![Total Downloads](https://img.shields.io/packagist/dt/keloola/keloola-service-auth.svg?style=flat-square)](https://packagist.org/packages/keloola/keloola-service-auth)
-![GitHub Actions](https://github.com/keloola/keloola-service-auth/actions/workflows/main.yml/badge.svg)
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/keloola/keloola-service-auth.svg?style=flat-square)](https://packagist.org/packages/keloola/keloola-sso-authorize)
+[![Total Downloads](https://img.shields.io/packagist/dt/keloola/keloola-service-auth.svg?style=flat-square)](https://packagist.org/packages/keloola/keloola-sso-authorize)
+![GitHub Actions](https://github.com/Thrive-Developer/keloola-authorize-package/actions/workflows/main.yml/badge.svg)
 
 ## Installation
 
@@ -16,11 +14,13 @@ composer require keloola/keloola-sso-authorize
 
 ## Usage
 
+Publish config :
+
 ```php
 php artisan vendor:publish --tag=keloola-auth-config
 ```
 
-```env
+```php
 KELOOLA_AUTH_APP_ID=xxx //app id
 KELOOLA_AUTH_SSO_HOST=https://accounts.keloola.xyz
 KELOOLA_AUTH_CACHE_EXPIRED=60
@@ -30,9 +30,12 @@ KELOOLA_AUTH_ACCOUNTING_APP_KEY=xxx //jika encrypt true ini require dengan app k
 ```
 
 ```php
-Tambahkan middleware di bootstrap app, sebagai berikut khususnya di routes/api.php
 
-project-laravel/bootstrap/app.php
+Setup Middleware Sso and Accounting
+
+You can use on global middlware 
+
+Location : project-laravel/bootstrap/app.php
 
 use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAuthMiddleware;
 
@@ -42,10 +45,11 @@ use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAuthMiddleware;
         ]);
 })
 
-Tambahkan middleware accounting jika app konek dengan accounting
+If you want to connect the keloola accounting , you must be use KeloolaAuthAccountingMiddleware
+
 use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAuthAccountingMiddleware;
 
-Tambahkan ke middleware sebelum KeloolaAuthMiddleware::class
+Add before KeloolaAuthMiddleware::class
 
 
 ->withMiddleware(function (Middleware $middleware) {
@@ -55,15 +59,27 @@ Tambahkan ke middleware sebelum KeloolaAuthMiddleware::class
         ]);
 })
 
+or via routes
+
+Route::middleware([KeloolaAuthMiddleware::class, KeloolaAuthAccountingMiddleware::class])
+->group(function () {
+    Route::get('/example', function () {
+        return 'OK';
+    });
+});
+
+
 ```
 
-```Consume Data
+## Consume Data
+
+```php
 
 Sso User Data 
-$request->user;
+$request->sso_user;
 
 Accunting Data
-$request->user_accoounting
+$request->accounting_user
 
 ```
 
