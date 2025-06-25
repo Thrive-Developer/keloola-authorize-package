@@ -5,7 +5,7 @@ use Psr\Http\Message\RequestInterface;
 use Illuminate\Encryption\Encrypter;
 use GuzzleHttp\Psr7\Utils;
 
-class AccountingRequest
+class KeloolaAccountingRequest
 {
     public static function handle(): callable
     {

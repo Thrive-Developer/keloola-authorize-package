@@ -2,6 +2,8 @@
 
 namespace Keloola\KeloolaSsoAuthorize\Services;
 
+use App\Http\Middleware\KeloolaAccountingRequest;
+use App\Http\Middleware\KeloolaAccountingResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +34,14 @@ class KeloolaAccountingService
         }
 
 
-        $response = Http::withToken($token)->post(config('keloolauthorize.keloola_auth_accounting_host').'/api/users/company',[
+        $response = Http::withToken($token)
+        ->withHeaders([
+            'Accept' => 'application/json',
+            'X-App-Key' => config('keloolauthorize.keloola_auth_accounting_app_key')
+        ])
+        ->withRequestMiddleware(KeloolaAccountingRequest::handle())
+        ->withResponseMiddleware(KeloolaAccountingResponse::handle())
+        ->post(config('keloolauthorize.keloola_auth_accounting_host').'/api/users/company',[
             'sso_id' => $sso_id
         ]);
 
