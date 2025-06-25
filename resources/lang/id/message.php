@@ -16,6 +16,6 @@ return [
     'expired_subscribtion'          => 'Langganan Anda telah kedaluwarsa.',
     'expired_token'                 => 'Maaf, token Anda telah kedaluwarsa',
     'config_host_require'           => 'Middleware Keloola SSO Authorize memerlukan konfigurasi dipublikasikan dan pengaturan keloola_sso_host dilakukan.',
-    'config_host_accunting_require' => 'Keloola SSO Authorize middleware requires publishing the config or setting keloola_auth_accounting_host.',
-    'config_host_accunting_app_key' => 'Keloola SSO Authorize middleware requires publishing the config or setting keloola_auth_accounting_app_key.'
+    'config_host_accounting_require' => 'Keloola SSO Authorize middleware requires publishing the config or setting keloola_auth_accounting_host.',
+    'config_host_accounting_app_key' => 'Keloola SSO Authorize middleware requires publishing the config or setting keloola_auth_accounting_app_key.'
 ];

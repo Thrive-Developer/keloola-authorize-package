@@ -13,16 +13,18 @@ class KeloolaAccountingService
     public function user(string $token, string $sso_id)
     {   
         if(empty(config('keloolauthorize.keloola_auth_accounting_host'))) return (object) [
-            'message' => __('keloolauthorize::message.config_host_accunting_require'),
+            'message' => __('keloolauthorize::message.config_host_accounting_require'),
             'status'  => Response::HTTP_FORBIDDEN,
             'data'    => []
         ];
 
-        if((config('keloolauthorize.keloola_auth_accounting_encrypt') ?? false) == true) return (object) [
-            'message' => __('keloolauthorize::message.config_host_accunting_app_key'),
-            'status'  => Response::HTTP_FORBIDDEN,
-            'data'    => []
-        ];
+        if((config('keloolauthorize.keloola_auth_accounting_encrypt') ?? false) == true) {
+            if(empty(config('keloolauthorize.keloola_auth_accounting_app_key'))) return (object) [
+                'message' => __('keloolauthorize::message.config_host_accounting_app_key'),
+                'status'  => Response::HTTP_FORBIDDEN,
+                'data'    => []
+            ];
+        }
 
         $cache_key = 'keloolauhtorize.'.$sso_id;
         if(Cache::has($cache_key)) {
