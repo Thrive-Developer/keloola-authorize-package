@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace Keloola\KeloolaSsoAuthorize\Http\Middleware;
+
 use Psr\Http\Message\RequestInterface;
 use Illuminate\Encryption\Encrypter;
 use GuzzleHttp\Psr7\Utils;

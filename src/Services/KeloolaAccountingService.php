@@ -2,8 +2,8 @@
 
 namespace Keloola\KeloolaSsoAuthorize\Services;
 
-use App\Http\Middleware\KeloolaAccountingRequest;
-use App\Http\Middleware\KeloolaAccountingResponse;
+use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAccountingRequest;
+use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAccountingResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
