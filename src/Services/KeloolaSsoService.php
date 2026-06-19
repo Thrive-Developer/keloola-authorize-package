@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Response;
-use Illuminate\Http\Request;
+use Keloola\KeloolaSsoAuthorize\Support\PayloadNormalizer;
 
 class KeloolaSsoService 
 {
@@ -20,7 +20,13 @@ class KeloolaSsoService
 
         $cache_key = 'keloolauhtorize.'.$token;
         if(Cache::has($cache_key)) {
-            return Cache::get($cache_key);
+            $cached = Cache::get($cache_key);
+
+            if(!PayloadNormalizer::containsIncompleteObject($cached)) {
+                return PayloadNormalizer::toObject($cached);
+            }
+
+            Cache::forget($cache_key);
         }
 
 
@@ -30,9 +36,11 @@ class KeloolaSsoService
 
         if($response->clientError()) {
             Cache::forget($cache_key);
-            Log::error('Failed get user sso '.$response->object()?->message);
+            $message = $response->json('message');
+            Log::error('Failed get user sso '.$message);
+
             return (object) [
-                'message' => $response->object()?->message,
+                'message' => $message,
                 'status'  => $response->status(),
                 'data'    => []
             ];
@@ -50,12 +58,14 @@ class KeloolaSsoService
 
         $expired = config('keloolauthorize.keloola_auth_cache_expired') ?? 3600;
 
-        return Cache::remember($cache_key, $expired, function () use ($response) {
-            return (object) [
-                'status' => $response->status(),
-                'message' => $response->object()?->message,
-                'data'    => $response->object()?->data
-            ];
-        });
+        $payload = [
+            'status' => $response->status(),
+            'message' => $response->json('message'),
+            'data'    => PayloadNormalizer::toArray($response->json('data', []))
+        ];
+
+        Cache::put($cache_key, $payload, $expired);
+
+        return PayloadNormalizer::toObject($payload);
     }
 }

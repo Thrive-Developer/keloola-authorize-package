@@ -7,8 +7,8 @@ use Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaAccountingResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Keloola\KeloolaSsoAuthorize\Support\PayloadNormalizer;
 
 class KeloolaAccountingService
 {
@@ -30,7 +30,13 @@ class KeloolaAccountingService
 
         $cache_key = 'keloolauhtorize.'.$sso_id;
         if(Cache::has($cache_key)) {
-            return Cache::get($cache_key);
+            $cached = Cache::get($cache_key);
+
+            if(!PayloadNormalizer::containsIncompleteObject($cached)) {
+                return PayloadNormalizer::toObject($cached);
+            }
+
+            Cache::forget($cache_key);
         }
 
 
@@ -47,9 +53,11 @@ class KeloolaAccountingService
 
         if($response->clientError()) {
             Cache::forget($cache_key);
-            Log::error('Failed get user accounting '.$response->object()?->message);
+            $message = $response->json('message');
+            Log::error('Failed get user accounting '.$message);
+
             return (object) [
-                'message' => $response->object()?->message,
+                'message' => $message,
                 'status'  => $response->status(),
                 'data'    => []
             ];
@@ -69,12 +77,14 @@ class KeloolaAccountingService
         $expired = config('keloolauthorize.keloola_auth_cache_expired') ?? 3600;
 
         
-        return Cache::remember($cache_key, $expired, function () use ($response) {
-            return (object) [
-                'status' => $response->status(),
-                'message' => $response->object()?->message,
-                'data'    => $response->object()?->data
-            ];
-        });
+        $payload = [
+            'status' => $response->status(),
+            'message' => $response->json('message'),
+            'data'    => PayloadNormalizer::toArray($response->json('data', []))
+        ];
+
+        Cache::put($cache_key, $payload, $expired);
+
+        return PayloadNormalizer::toObject($payload);
     }
 }
