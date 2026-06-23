@@ -28,7 +28,7 @@ class KeloolaAccountingService
             ];
         }
 
-        $cache_key = 'keloolauhtorize.'.$sso_id;
+        $cache_key = 'keloolauhtorize.'.$token.'.'.$sso_id;
         if(Cache::has($cache_key)) {
             $cached = Cache::get($cache_key);
 
