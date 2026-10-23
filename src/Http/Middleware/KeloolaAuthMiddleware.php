@@ -29,6 +29,12 @@ class KeloolaAuthMiddleware
         $sso_data          = (object) $this->ssoService->user($token);
         if($sso_data->status != 200) return response()->json(['message' => $sso_data->message], $sso_data->status);
 
+        // Delegated OAuth tokens use explicit per-operation scope + permission
+        // checks, never the unrestricted browser-session middleware.
+        if (isset($sso_data->data->scope)) {
+            return response()->json(['message' => 'Use a scope-protected integration endpoint.'], 403);
+        }
+
         $application      = null;
 
         if(is_array($sso_data->data->applications)) {

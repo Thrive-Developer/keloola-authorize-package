@@ -105,3 +105,31 @@ If you discover any security related issues, please email roni.jakarianto@thrive
 
 -   [Roni Jakarianto](https://github.com/keloola)
 -   [All Contributors](../../contributors)
+## OAuth scope and permission middleware
+
+For delegated integration endpoints, use the new `keloola.scope` middleware:
+
+```php
+Route::post('/integrations/sales-orders', [SalesOrderController::class, 'store'])
+    ->middleware('keloola.scope:accounting:sales-orders:write,sales_order.create');
+```
+
+Configure `KELOOLA_AUTH_SSO_HOST` and `KELOOLA_AUTH_APP_ID` for the resource app.
+The middleware calls SSO `POST /api/oauth/access/check` on every request (no cache).
+SSO verifies the token, current consent, active scope assignment, resource app,
+organization membership, and the user's permission for that operation.
+
+Use verified context from `$request->attributes->get('oauth_access')` for `user_id`
+and `organization_id`. Always filter resource queries by that organization and
+apply your local data policies/business/subscription checks. Request input named
+`oauth_access` or `sso_user` is not verified context. Explicit organization_id in
+input or route must match the token organization.
+
+This middleware does not log in a local Laravel user. Use it on dedicated
+integration routes; do not combine with legacy `KeloolaAuthMiddleware`, which
+serves browser sessions and rejects scoped OAuth profile responses. Missing or
+invalid credentials return 401, insufficient access 403, and unavailable or
+malformed SSO responses 503. No handler executes on failure.
+
+Requires the SSO scope-catalog migration and `/api/oauth/access/check` endpoint.
+Legacy tokens without recorded scope consent cannot access these routes.

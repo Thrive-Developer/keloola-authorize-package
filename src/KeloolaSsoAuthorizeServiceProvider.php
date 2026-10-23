@@ -11,6 +11,7 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->app['router']->aliasMiddleware('keloola.scope', \Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaScopeMiddleware::class);
         /*
          * Optional methods to load your package assets
          */
