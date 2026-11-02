@@ -14,6 +14,13 @@ return [
         'handler' => \Keloola\KeloolaSsoAuthorize\Integration\DatabaseIntegrationHandler::class,
         // Stable numeric IDs. Add the app's actual permission catalog here.
         'permissions' => [],
+        // array (default) or spatie; Spatie uses permission.models.permission.
+        'permission_source' => env('KELOOLA_SSO_PERMISSION_SOURCE', 'array'),
+        'spatie' => [
+            'guard_name' => env('KELOOLA_SSO_PERMISSION_GUARD', 'web'),
+            // Optional custom column/accessor; standard Spatie has no group column.
+            'group_attribute' => null,
+        ],
     ],
 
 

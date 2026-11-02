@@ -38,18 +38,7 @@ class DatabaseIntegrationHandler implements IntegrationHandler
 
     private function catalog(): array
     {
-        $items = config('keloolauthorize.integration.permissions', []);
-        if (!is_array($items)) throw new IntegrationException('integration_unavailable', 'Invalid permission catalog configuration.', 503);
-        $ids = [];
-        foreach ($items as $item) {
-            if (!is_array($item) || !isset($item['id'], $item['name'], $item['guard_name'])
-                || !is_int($item['id']) || $item['id'] < 1 || in_array($item['id'], $ids, true)
-                || !is_string($item['name']) || $item['name'] === '' || !is_string($item['guard_name'])) {
-                throw new IntegrationException('integration_unavailable', 'Invalid permission catalog configuration.', 503);
-            }
-            $ids[] = $item['id'];
-        }
-        return array_values($items);
+        return app(PermissionCatalog::class)->all();
     }
 
     private function permissions(array $ids): array

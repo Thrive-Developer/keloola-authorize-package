@@ -51,6 +51,46 @@ php artisan route:list --name=keloola.integration
 
 Rebuild config/route cache sesuai proses deployment setelah konfigurasi final. Route tidak memakai grup `web`, cookie, atau CSRF; autentikasinya adalah signature server. Middleware global aplikasi tetap berlaku: jangan memasang middleware login yang mewajibkan subscription aktif pada semua request provisioning. Pilih middleware bisnis pada route bisnis saja.
 
+## Katalog permission dari Spatie
+
+Secara default, `integration.permission_source` bernilai `array` dan memakai `integration.permissions` seperti sebelumnya. Untuk aplikasi yang sudah memasang `spatie/laravel-permission`, gabungkan pengaturan berikut ke `config/keloolauthorize.php`:
+
+```php
+'permission_source' => env('KELOOLA_SSO_PERMISSION_SOURCE', 'array'),
+'spatie' => [
+    'guard_name' => env('KELOOLA_SSO_PERMISSION_GUARD', 'web'),
+    'group_attribute' => null,
+],
+```
+
+Lalu set environment aplikasi:
+
+```dotenv
+KELOOLA_SSO_PERMISSION_SOURCE=spatie
+KELOOLA_SSO_PERMISSION_GUARD=web
+```
+
+Bangun ulang config cache sesuai deployment. Model dibaca dari `config('permission.models.permission')`, sehingga custom model Spatie juga didukung. Package ini tidak memasang Spatie atau menjalankan migration Spatie secara otomatis. Model/tabel harus siap sebelum integrasi dipanggil.
+
+`GET /api/integrations/sso/permissions` tetap menghasilkan:
+
+```json
+{
+  "is_success": true,
+  "data": [
+    {"id": 101, "name": "inventory.read", "group": "general", "guard_name": "web"}
+  ]
+}
+```
+
+ID berasal dari primary key permission Spatie dan harus integer positif; UUID tidak didukung oleh kontrak SSO ini. Katalog hanya memuat guard yang dipilih, diurutkan berdasarkan ID, tanpa pagination. Kolom internal lain pada model tidak diekspos. Spatie standar tidak memiliki field `group`; default respons adalah `general`. Jika custom model memiliki kolom/accessor kategori, set `group_attribute` ke nama atribut tersebut, misalnya `group` atau `category`. Nilai null menggunakan fallback `general`.
+
+Sumber yang dipilih dipakai bersama oleh endpoint katalog, validasi create/update role, permission owner saat provisioning pertama, dan `DirectoryAccess`. Mode Spatie tidak menggabungkan array config. Konfigurasi/model/tabel tidak valid menghasilkan `503 integration_unavailable` tanpa fallback diam-diam. Data dibaca saat operasi berjalan; penambahan permission tidak otomatis memperluas role lama.
+
+**Cakupan:** ini memilih sumber katalog permission. Role/membership handler bawaan tetap berada di direktori `keloola_sso_*`; fitur ini tidak otomatis mengubah pivot role/user Spatie. Gunakan handler native jika aplikasi memerlukan sinkronisasi role/anggota Spatie. Adapter yang sebelumnya membaca array config perlu memakai `app(\Keloola\KeloolaSsoAuthorize\Integration\PermissionCatalog::class)->all()` agar memakai sumber yang sama.
+
+Sebelum berpindah dari array ke Spatie pada aplikasi yang sudah terpasang, samakan mapping ID permission lama dengan ID Spatie atau lakukan migrasi mapping yang ditinjau. Jangan sekadar mengganti sumber jika ID berbeda: role direktori dan mapping SSO menyimpan ID tersebut. Uji ulang katalog, role, dan akses setelah migrasi.
+
 ## Dua cara menggunakan penyimpanan
 
 **Handler bawaan:** membuat direktori integrasi pada tabel `keloola_sso_organizations`, `keloola_sso_users`, `keloola_sso_memberships`, `keloola_sso_roles`, dan `keloola_sso_invitations`. Organisasi/user memakai UUID SSO sebagai primary key; ID role berupa integer lokal. Tidak ada password SSO yang disimpan. Aplikasi baru dapat memakai direktori ini sebagai sumber membership dan role; tabel bisnis tetap harus dibatasi per organisasi.

@@ -78,6 +78,58 @@ class IntegrationTest extends TestCase
         return ['sso_id' => self::MEMBER, 'name' => 'Member', 'email' => 'member@example.com', 'role_id' => $role];
     }
 
+    private function spatieCatalog(): void
+    {
+        if (!class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->markTestSkipped('Install spatie/laravel-permission to test the optional catalog source.');
+        }
+        config(['permission.models.permission' => \Spatie\Permission\Models\Permission::class,
+            'permission.table_names.permissions' => 'permissions',
+            'keloolauthorize.integration.permission_source' => 'spatie']);
+        \Illuminate\Support\Facades\Schema::create('permissions', function ($table) {
+            $table->id(); $table->string('name'); $table->string('guard_name');
+            $table->string('category')->nullable(); $table->timestamps();
+        });
+        DB::table('permissions')->insert([
+            ['id' => 201, 'name' => 'inventory.read', 'guard_name' => 'web', 'category' => 'inventory'],
+            ['id' => 202, 'name' => 'inventory.update', 'guard_name' => 'api', 'category' => null],
+        ]);
+    }
+
+    public function test_spatie_catalog_keeps_response_shape_and_drives_role_validation_and_access(): void
+    {
+        $this->spatieCatalog();
+        $this->signed('GET', '/permissions')->assertOk()->assertExactJson(['is_success' => true, 'data' => [
+            ['id' => 201, 'name' => 'inventory.read', 'group' => 'general', 'guard_name' => 'web'],
+        ]]);
+        $role = $this->provision();
+        $this->assertSame([201], json_decode(DB::table('keloola_sso_roles')->where('id', $role)->value('permissions'), true));
+        $this->createRole(permissions: [201]);
+        $this->signed('POST', '/organizations/'.self::ORG.'/roles', [
+            'sso_role_id' => 'invalid', 'name' => 'Invalid', 'permissions' => [202],
+        ])->assertStatus(422);
+        $this->assertTrue(app(\Keloola\KeloolaSsoAuthorize\Integration\DirectoryAccess::class)->allows(self::ORG, self::OWNER, 'inventory.read'));
+        DB::table('permissions')->where('id', 201)->delete();
+        $this->assertFalse(app(\Keloola\KeloolaSsoAuthorize\Integration\DirectoryAccess::class)->allows(self::ORG, self::OWNER, 'inventory.read'));
+    }
+
+    public function test_spatie_custom_group_and_guard_are_configurable(): void
+    {
+        $this->spatieCatalog();
+        config(['keloolauthorize.integration.spatie.group_attribute' => 'category']);
+        $this->signed('GET', '/permissions')->assertOk()->assertJsonPath('data.0.group', 'inventory');
+        config(['keloolauthorize.integration.spatie.guard_name' => 'api']);
+        $this->signed('GET', '/permissions')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', 202)->assertJsonPath('data.0.group', 'general');
+    }
+
+    public function test_invalid_catalog_source_or_model_fails_closed(): void
+    {
+        config(['keloolauthorize.integration.permission_source' => 'unknown']);
+        $this->signed('GET', '/permissions')->assertStatus(503);
+        config(['keloolauthorize.integration.permission_source' => 'spatie', 'permission.models.permission' => 'MissingPermissionModel']);
+        $this->signed('GET', '/permissions')->assertStatus(503);
+    }
+
     public function test_hmac_has_a_stable_independent_test_vector(): void
     {
         $canonical = "1700000000\nPOST\n/api/test\nb=2&a=1\n{}\n123\n0123456789abcdef";

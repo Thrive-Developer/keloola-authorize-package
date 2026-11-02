@@ -10,7 +10,7 @@ class DirectoryAccess
     public function allows(string $organizationId, string $userId, string $permission): bool
     {
         $id = null;
-        foreach (config('keloolauthorize.integration.permissions', []) as $item) {
+        foreach (app(PermissionCatalog::class)->all() as $item) {
             if (($item['name'] ?? null) === $permission) $id = $item['id'];
         }
         if ($id === null) return false;
