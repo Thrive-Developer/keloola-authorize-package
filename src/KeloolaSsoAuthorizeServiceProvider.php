@@ -11,6 +11,10 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if (config('keloolauthorize.integration.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/integration.php');
+        }
+
         $this->app['router']->aliasMiddleware('keloola.scope', \Keloola\KeloolaSsoAuthorize\Http\Middleware\KeloolaScopeMiddleware::class);
         /*
          * Optional methods to load your package assets
@@ -21,6 +25,9 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'keloola-integration-migrations');
             $this->publishes([
                 __DIR__.'/../config/config.php' => config_path('keloolauthorize.php'),
             ], 'keloola-auth-config');
@@ -51,6 +58,15 @@ class KeloolaSsoAuthorizeServiceProvider extends ServiceProvider
     {
         // Automatically apply the package configuration
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'keloolauthorize');
+
+        $this->app->bind(\Keloola\KeloolaSsoAuthorize\Integration\IntegrationHandler::class, function ($app) {
+            $class = config('keloolauthorize.integration.handler', \Keloola\KeloolaSsoAuthorize\Integration\DatabaseIntegrationHandler::class);
+            $handler = $app->make($class);
+            if (!$handler instanceof \Keloola\KeloolaSsoAuthorize\Integration\IntegrationHandler) {
+                throw new \LogicException('Configured integration handler must implement IntegrationHandler.');
+            }
+            return $handler;
+        });
 
         // Register the main class to use with the facade
         $this->app->singleton('keloolauthorize', function () {

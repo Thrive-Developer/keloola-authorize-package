@@ -133,3 +133,15 @@ malformed SSO responses 503. No handler executes on failure.
 
 Requires the SSO scope-catalog migration and `/api/oauth/access/check` endpoint.
 Legacy tokens without recorded scope consent cannot access these routes.
+
+
+## Internal application provisioning
+
+Modul integrasi opt-in menyediakan route organisasi, anggota, role, permission,
+dan mirror undangan dengan autentikasi HMAC v1 dan penolakan replay.
+Gunakan direktori database bawaan atau implementasikan `IntegrationHandler`
+untuk model bisnis aplikasi. Modul tidak otomatis menulis tabel native aplikasi.
+
+Lihat [panduan konfigurasi dan integrasi](docs/integration.md) dan
+[kontrak OpenAPI](docs/integration.openapi.json). Instalasi lama tetap tidak
+mengekspos route baru sampai `KELOOLA_SSO_INTEGRATION_ENABLED=true`.
